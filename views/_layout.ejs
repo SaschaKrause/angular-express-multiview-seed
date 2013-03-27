@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app>
+<html ng-app="mainApp">
 <head>
     <title><%=title%></title>
 
@@ -7,12 +7,13 @@
     <meta name="description" content="Lets start counting everything that counts to you. <%-blocks.metaDescription%>">
 
     <%-stylesheets%>
-    <link rel="stylesheet" href="app/styles/dist/main.css" type="text/css">
+    <link rel="stylesheet" href="app/styles/dist/base.css" type="text/css">
+    <link rel="stylesheet" href="app/styles/dist/pages.css" type="text/css">
 
 </head>
 <body>
 
-<div ng-controller="<%=ngPageController%>">
+<div ng-controller="<%=ngPageController%>" class="<%=cssPageIdentifier%>">
     <%-body -%>
 </div>
 
@@ -20,6 +21,8 @@
     -
 </footer>
 
+<script src="app/lib/angular.min.js"></script>
+<script src="app/mainApp.js"></script>
 <%-scripts%>
 
 </body>

@@ -1,0 +1,13 @@
+{
+    "destination": "public/app/lib",
+    "dependencies": [
+        {
+            "source": "https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js",
+            "output": "angular.js"
+        },
+        {
+            "source": "https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js",
+            "output": "angular.min.js"
+        }
+    ]
+}
