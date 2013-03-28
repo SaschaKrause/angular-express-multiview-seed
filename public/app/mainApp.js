@@ -1,1 +1,1 @@
-var main = angular.module('mainApp', []);
+var mainApp = angular.module('mainApp', ['counterComponent']);
