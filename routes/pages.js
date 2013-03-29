@@ -10,7 +10,7 @@ module.exports.configure = function (webApp) {
 // delegates
 
 function routeIndex(req, res) {
-    res.render('index', {
+    res.render('main', {
         title: 'main page',
         ngPageController: 'MainPageCtrl',
         cssPageIdentifier: 'main-page'
