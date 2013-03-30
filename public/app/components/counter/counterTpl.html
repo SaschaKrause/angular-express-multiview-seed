@@ -1,4 +1,20 @@
 <div class="counter-comp">
-    <div class="digit">3</div>
-    <div class="digit">2</div>
+    <div style="height:20%"></div>
+    <div class="countPanel">
+        <div class="countDigit">{{counter.h1}}</div>
+        <div class="countDigitSpacer"></div>
+        <div class="countDigit">{{counter.h2}}</div>
+        <div class="countDigitColon">:</div>
+        <div class="countDigit">{{counter.m1}}</div>
+        <div class="countDigitSpacer"></div>
+        <div class="countDigit">{{counter.m2}}</div>
+        <div class="countDigitColon">:</div>
+        <div class="countDigit">{{counter.s1}}</div>
+        <div class="countDigitSpacer"></div>
+        <div class="countDigit">{{counter.s2}}</div>
+        <div style="clear:both"></div>
+    </div>
+    <input type="text" value="asd" ng-model="counter.input"/>
+    <input type="button" ng-click="change()" class="btn" value="change h1"/>
+    <button ng-click="doStuff('asdf')">change the height from component</button>
 </div>

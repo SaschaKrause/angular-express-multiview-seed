@@ -27,9 +27,9 @@ webApp.configure(function () {
     webApp.use(express.methodOverride());
     webApp.use(webApp.router);
     webApp.use(require('less-middleware')({
-        dest: path.join(__dirname, 'public', 'webApp','styles','dist'),
-        src: path.join(__dirname, 'public', 'webApp','styles','less'),
-        prefix: '/webApp/styles/dist',
+        dest: path.join(__dirname, 'public', 'app','styles','dist'),
+        src: path.join(__dirname, 'public', 'app','styles','less'),
+        prefix: '/app/styles/dist',
         force: 'true', // Always re-compile less files on each request.
         compress: true
     }));

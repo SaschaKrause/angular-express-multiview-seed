@@ -6,10 +6,16 @@
     <meta http-equiv="content-type" content="text/html;charset=UTF-8">
     <meta name="description" content="Lets start counting everything that counts to you. <%-blocks.metaDescription%>">
 
-    <%-stylesheets%>
+    <!--fonts-->
+    <link href='http://fonts.googleapis.com/css?family=Unica+One' rel='stylesheet' type='text/css'>
+
+    <!--styles-->
     <link rel="stylesheet" href="app/styles/dist/base.css" type="text/css">
     <link rel="stylesheet" href="app/styles/dist/pages.css" type="text/css">
     <link rel="stylesheet" href="app/styles/dist/components.css" type="text/css">
+
+    <!--page specific-->
+    <%-stylesheets%>
 
 </head>
 <body>
@@ -22,8 +28,14 @@
     -
 </footer>
 
-<script src="app/lib/angular.min.js"></script>
+<script src="app/lib/angular.js"></script>
 <script src="app/components/counter/counterComp.js"></script>
+
+
+<!--services-->
+<script src="app/services/countAreaResizeService.js"></script>
+
+<!--main app-->
 <script src="app/mainApp.js"></script>
 <%-scripts%>
 

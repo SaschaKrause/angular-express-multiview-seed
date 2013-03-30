@@ -1,7 +1,11 @@
 <div>
     <% layout('_layout') -%>
     <% script('app/pages/main/mainPageCtrl.js') -%>
-     <counter></counter>
+
+    <button ng-click="doStuff('asdf')">change the height</button>
+
+
+    <counter></counter>
     <input type="text" ng-model="msg"/>
 
     {{msg}}
