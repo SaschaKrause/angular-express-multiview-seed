@@ -1,5 +1,6 @@
 var mainApp = angular.module('mainApp', [
-    'counterComponent'
+    'counterComponent',
+    'notificationBarComponent'
 ]);
 
 mainApp.run(function(){});

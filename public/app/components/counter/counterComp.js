@@ -2,26 +2,30 @@ var counterModule = angular.module('counterComponent', []);
 
 counterModule.directive('counter', function createDirective(countAreaResizeService, detailCounterService) {
     return {
-        restrict: 'E',
-        templateUrl: 'app/components/counter/counterTpl.html',
+        restrict:'E',
+        templateUrl:'app/components/counter/counterTpl.html',
 //        scope: {format: '@format'},
-        link: function linking($scope, element, attrs) {
+        link:function linking($scope, element, attrs) {
 
 
             var countPanel = element.find(".countPanel");
 
             var countPanelInitialHeight = countPanel.height();
             $scope.counter = {
-                h1: '2',
-                h2: '3',
-                m1: '9',
-                m2: '5',
-                s1: '1',
-                s2: '1'
+                h1:'2',
+                h2:'3',
+                m1:'9',
+                m2:'5',
+                s1:'1',
+                s2:'1'
             };
 
             countAreaResizeService.notifyOnResize(resizePanelToScaleFactor);
+            detailCounterService.notifyAt({seconds:5, when:'afterStart'}, notifyAfterStart);
 
+            function notifyAfterStart (countreeRef, ms) {
+                console.log("notified after start " + ms);
+            };
 
             $scope.change = function change() {
                 var arr = this.counter.input.split(':');
@@ -72,7 +76,7 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
 
             function resizePanelToScaleFactor(scaleFactor) {
                 console.log("resizePanelToScaleFactor notified: " + scaleFactor);
-                countPanel.css({height: (countPanelInitialHeight * scaleFactor) + 'px'});
+                countPanel.css({height:(countPanelInitialHeight * scaleFactor) + 'px'});
             }
 
         }

@@ -27,6 +27,9 @@ function addDetailCounterService(app) {
             countree.resume();
         };
 
+        counter.notifyAt = function(config, callback) {
+            countree.notifyAt(config, callback);
+        };
 
         return counter;
     });
