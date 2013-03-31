@@ -2,11 +2,12 @@
     <% layout('_layout') -%>
     <% script('app/pages/main/mainPageCtrl.js') -%>
 
-    <button ng-click="doStuff('asdf')">change the height</button>
+    <input type="text" ng-model="msg"/> <button ng-click="doStuff(msg)">change the height</button>
 
+    <br/>
+    <input type="button" ng-click="suspendCounting()" class="btn" value="suspend from main"/>
+    <input type="button" ng-click="resumeCounting()" class="btn" value="resume from main"/>
 
     <counter></counter>
-    <input type="text" ng-model="msg"/>
 
-    {{msg}}
 </div>
