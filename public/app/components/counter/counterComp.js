@@ -4,20 +4,26 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
     return {
         restrict:'E',
         templateUrl:'app/components/counter/counterTpl.html',
-//        scope: {format: '@format'},
+//        scope: {controls: '@controls'},
         link:function linking($scope, element, attrs) {
 
+
+            $scope.options = {
+              showControls: attrs.showControls
+            };
 
             var countPanel = element.find(".countPanel");
 
             var countPanelInitialHeight = countPanel.height();
+
             $scope.counter = {
-                h1:'2',
-                h2:'3',
-                m1:'9',
-                m2:'5',
-                s1:'1',
-                s2:'1'
+                h1:'-',
+                h2:'-',
+                m1:'-',
+                m2:'-',
+                s1:'-',
+                s2:'-',
+                state: detailCounterService.state
             };
 
             countAreaResizeService.notifyOnResize(resizePanelToScaleFactor);
@@ -27,7 +33,7 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
                 console.log("notified after start " + ms);
             };
 
-            $scope.change = function change() {
+/*            $scope.change = function change() {
                 var arr = this.counter.input.split(':');
 
                 this.counter.h1 = arr[0][0];
@@ -36,7 +42,10 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
                 this.counter.m2 = arr[1][1];
                 this.counter.s1 = arr[2][0];
                 this.counter.s2 = arr[2][1];
-            };
+                this.counter.state =
+            };*/
+
+            $scope.counter.state = detailCounterService.countreeReference.state;
 
             $scope.$watch('counter.s2', function (newValue, oldValue) {
                 console.log("newValue: " + newValue + " oldValue: " + oldValue);
@@ -47,10 +56,12 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
             $scope.startCounter = function startCounter() {
 //                $scope.counter.s1 =  parseInt($scope.counter.s1) +1 +"";
                 detailCounterService.restartCounting(onCountInterval);
+                $scope.counter.state = detailCounterService.countreeReference.state;
             };
 
             $scope.suspendCounting = function suspendCounting() {
                 detailCounterService.suspendCounting();
+                $scope.counter.state = detailCounterService.countreeReference.state;
             };
 
             function onCountInterval(countResult) {
@@ -69,7 +80,6 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
                 $scope.counter.m2 = m.split('')[1];
                 $scope.counter.s1 = s.split('')[0];
                 $scope.counter.s2 = s.split('')[1];
-
                 $scope.safeApply();
 
             }

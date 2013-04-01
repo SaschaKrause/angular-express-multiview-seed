@@ -31,6 +31,7 @@ function addDetailCounterService(app) {
             countree.notifyAt(config, callback);
         };
 
+        counter.countreeReference = countree;
         return counter;
     });
 }

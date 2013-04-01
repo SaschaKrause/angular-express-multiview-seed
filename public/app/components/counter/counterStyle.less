@@ -1,15 +1,22 @@
+@counterComp-backgroundColor: rgba(0, 0, 0, 0.2);
+@counterComp-digitBackgroundColor: rgba(245, 245, 245, 0.9);
+@counterComp-controlHoverBackgroundColor: rgba(0, 0, 0, 0.22);
+@counterComp-controlIconColor: rgba(245, 245, 245, 0.9);
+@counterComp-controlFontSize: 16pt;
+
+//@import '../../../app/styles/less/base/bootstrap/mixins';
 .counter-comp .countDigit {
   overflow: hidden;
   float: left;
-  background-color: rgba(245, 245, 245, 0.9);
-  border-radius: 5px;
+  background-color: @counterComp-digitBackgroundColor;
   font-family: 'Unica One', sans-serif;
   font-size: 80pt;
   height: 100%;
   width: 80px;
   text-align: center;
   font-weight: bold;
-  color: rgba(0, 0, 0, 0.75);;
+  color: rgba(0, 0, 0, 0.75);
+  .border-radius( 5px );
 }
 
 .counter-comp .countDigitSpacer {
@@ -31,18 +38,35 @@
   color: rgba(245, 245, 245, 0.5);
 }
 
-
 .counter-comp .countPanel {
+  line-height: 92pt;
   height: 120px;
   padding: 10px;
-  background-color: rgba(0, 0, 0, 0.20);
+  background-color: @counterComp-backgroundColor;
 }
 
 .counter-comp {
-  line-height: 92pt;
   margin-left: auto;
   margin-right: auto;
   display: table;
   height: 50%;
 }
 
+.counter-comp .counter-control {
+  margin: 0 auto;
+  display: table;
+  background-color: @counterComp-backgroundColor;
+}
+
+.counter-comp .counter-control i {
+  cursor: pointer;
+  padding: 20px 22px;
+  font-size: @counterComp-controlFontSize;
+  line-height: 44pt;
+  color: @counterComp-controlIconColor;
+}
+
+.counter-comp .counter-control i:hover {
+  background-color: @counterComp-controlHoverBackgroundColor;
+  color: white;
+}

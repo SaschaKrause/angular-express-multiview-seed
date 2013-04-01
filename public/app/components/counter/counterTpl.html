@@ -1,4 +1,5 @@
 <div class="counter-comp">
+    {{options.showControls}}
     <div style="height:20%"></div>
     <div class="countPanel">
         <div class="countDigit">{{counter.h1}}</div>
@@ -14,6 +15,12 @@
         <div class="countDigit">{{counter.s2}}</div>
         <div style="clear:both"></div>
     </div>
-    <input type="button" ng-click="startCounter()" class="btn" value="start"/>
-    <input type="button" ng-click="suspendCounting()" class="btn" value="suspend"/>
+
+    <div class="counter-control" ng-show="options.showControls">
+        <!--<input type="button" ng-click="startCounter()" class="btn" value="start"/>-->
+        <!--<input type="button" ng-click="suspendCounting()" class="btn icon-repeat" />-->
+        <i class="icon-play" ng-click="startCounter()"></i>
+        <i class="icon-pause" ng-click="suspendCounting()" ></i>
+    </div>
+    status: {{counter.state}}
 </div>
