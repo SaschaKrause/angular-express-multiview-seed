@@ -16,7 +16,8 @@ function MainPageCtrl($scope, countAreaResizeService, detailCounterService) {
     $("#handle").draggable({ axis: "y",
         scroll: false,
         drag: scaleTopContainer,
-        containment: "#handle-constrain-container" });
+        containment: "#handle-constrain-container",
+        cursor: "n-resize"});
 
     $scope.msg = 'ausm main ctrl';
 
