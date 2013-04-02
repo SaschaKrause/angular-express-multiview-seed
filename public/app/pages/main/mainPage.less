@@ -1,4 +1,43 @@
+@detailTopAreaHeight: 400px;
+
 .main-page .example {
   color: blue;
 }
 
+#detail-top-area {
+  background-color: @defaultTopAreaBackground;
+  height: @detailTopAreaHeight;
+}
+
+#handle {
+  background-color: #dddddd;
+  cursor: n-resize;
+  position: absolute;
+  display: inline-block;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px 0;
+  width: 50px;
+  text-align: center;
+  font-size: 8pt;
+  color: #b0b0b0;
+}
+
+#handle-constrain-container {
+  position: absolute;
+  display: inline-block;
+  left: 0;
+  right: 0;
+  top: @detailTopAreaHeight;
+  margin-left: auto;
+  margin-right: auto;
+  width: 70px;
+//  background-color: red;
+  height: 400px;
+  z-index: -20;
+}
+
+#detail-meta-area {
+}

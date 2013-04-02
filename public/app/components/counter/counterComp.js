@@ -2,48 +2,53 @@ var counterModule = angular.module('counterComponent', []);
 
 counterModule.directive('counter', function createDirective(countAreaResizeService, detailCounterService) {
     return {
-        restrict:'E',
-        templateUrl:'app/components/counter/counterTpl.html',
+        restrict: 'E',
+        templateUrl: 'app/components/counter/counterTpl.html',
 //        scope: {controls: '@controls'},
-        link:function linking($scope, element, attrs) {
+        link: function linking($scope, element, attrs) {
 
 
             $scope.options = {
-              showControls: attrs.showControls
+                showControls: attrs.showControls
             };
 
             var countPanel = element.find(".countPanel");
+            var counterDigit = element.find(".countDigit");
+            var counterDigitSpacer = element.find(".countDigitSpacer");
+            var counterDigitColon = element.find(".countDigitColon");
 
             var countPanelInitialHeight = countPanel.height();
+            var countPanelInitialLineHeight = parseFloat(countPanel.css('line-height').split('px')[0])
 
             $scope.counter = {
-                h1:'-',
-                h2:'-',
-                m1:'-',
-                m2:'-',
-                s1:'-',
-                s2:'-',
-                state: detailCounterService.state
+                h1: '-',
+                h2: '-',
+                m1: '-',
+                m2: '-',
+                s1: '-',
+                s2: '-',
+                counting: false,
+                suspended: false
             };
 
             countAreaResizeService.notifyOnResize(resizePanelToScaleFactor);
-            detailCounterService.notifyAt({seconds:5, when:'afterStart'}, notifyAfterStart);
+            detailCounterService.notifyAt({seconds: 5, when: 'afterStart'}, notifyAfterStart);
 
-            function notifyAfterStart (countreeRef, ms) {
+            function notifyAfterStart(countreeRef, ms) {
                 console.log("notified after start " + ms);
-            };
+            }
 
-/*            $scope.change = function change() {
-                var arr = this.counter.input.split(':');
+            /*            $scope.change = function change() {
+             var arr = this.counter.input.split(':');
 
-                this.counter.h1 = arr[0][0];
-                this.counter.h2 = arr[0][1];
-                this.counter.m1 = arr[1][0];
-                this.counter.m2 = arr[1][1];
-                this.counter.s1 = arr[2][0];
-                this.counter.s2 = arr[2][1];
-                this.counter.state =
-            };*/
+             this.counter.h1 = arr[0][0];
+             this.counter.h2 = arr[0][1];
+             this.counter.m1 = arr[1][0];
+             this.counter.m2 = arr[1][1];
+             this.counter.s1 = arr[2][0];
+             this.counter.s2 = arr[2][1];
+             this.counter.state =
+             };*/
 
             $scope.counter.state = detailCounterService.countreeReference.state;
 
@@ -53,16 +58,33 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
             }, true);
 
 
-            $scope.startCounter = function startCounter() {
+            $scope.startCounting = function startCounting() {
 //                $scope.counter.s1 =  parseInt($scope.counter.s1) +1 +"";
                 detailCounterService.restartCounting(onCountInterval);
-                $scope.counter.state = detailCounterService.countreeReference.state;
             };
 
             $scope.suspendCounting = function suspendCounting() {
                 detailCounterService.suspendCounting();
-                $scope.counter.state = detailCounterService.countreeReference.state;
             };
+
+            $scope.resumeCounting = function resumeCounting() {
+                detailCounterService.resumeCounting();
+            };
+
+            detailCounterService.notifyAt({event: 'onStart'}, function () {
+                $scope.counter.counting = true;
+                $scope.counter.suspended = false;
+            });
+
+            detailCounterService.notifyAt({event: 'onResume'}, function () {
+                $scope.counter.counting = true;
+                $scope.counter.suspended = false;
+            });
+
+            detailCounterService.notifyAt({event: 'onSuspend'}, function () {
+                $scope.counter.counting = false;
+                $scope.counter.suspended = true;
+            });
 
             function onCountInterval(countResult) {
                 var msPassed = countResult.getMillisecondsLeft();
@@ -85,8 +107,12 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
             }
 
             function resizePanelToScaleFactor(scaleFactor) {
-                console.log("resizePanelToScaleFactor notified: " + scaleFactor);
-                countPanel.css({height:(countPanelInitialHeight * scaleFactor) + 'px'});
+                countPanel.css({height: (countPanelInitialHeight * scaleFactor) + 'px'});
+                countPanel.css({'line-height': (countPanelInitialLineHeight * scaleFactor) + 'px'});
+                counterDigit.css({width: counterDigit.height() / 1.5 + 'px'});
+                counterDigit.css({'font-size': counterDigit.height() / 1.5 + 'pt'});
+                counterDigitColon.css({'font-size': counterDigit.height() / 1.7 + 'pt'});
+                counterDigitSpacer.css({width: counterDigit.width() / 18 + 'px'});
             }
 
         }

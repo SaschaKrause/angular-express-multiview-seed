@@ -4,8 +4,8 @@ function addDetailCounterService(app) {
         var counter = {};
 
         var counterOption = {
-            direction: 'up',
-            minutes: 2,
+            direction: 'down',
+            minutes: 23,
             seconds: 40,
             hours: 1,
             days: 0,

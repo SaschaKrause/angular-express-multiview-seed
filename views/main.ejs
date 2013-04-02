@@ -1,15 +1,27 @@
 <div>
     <% layout('_layout') -%>
+
+    <% script('app/lib/jquery-ui-1.9.2.custom.js') -%>
+
     <% script('app/pages/main/mainPageCtrl.js') -%>
 
-    <input type="text" ng-model="msg"/> <button ng-click="doStuff(msg)">change the height</button>
+    <div id="detail-top-area">
+        <!--<input type="text" ng-model="msg"/> <button ng-click="doStuff(msg)">change the height</button>-->
 
-    <br/>
-    <input type="button" ng-click="suspendCounting()" class="btn" value="suspend from main"/>
-    <input type="button" ng-click="resumeCounting()" class="btn" value="resume from main"/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <!--<input type="button" ng-click="suspendCounting()" class="btn" value="suspend from main"/>-->
+        <!--<input type="button" ng-click="resumeCounting()" class="btn" value="resume from main"/>-->
 
-    <counter show-controls="true"></counter>
+        <counter show-controls="true"></counter>
 
-    - stuff -
-    <notification-bar></notification-bar>
+        <!--- stuff --->
+        <!--<notification-bar></notification-bar>-->
+    </div>
+    <div id="detail-meta-area">
+        <div id="handle-constrain-container"></div>
+            <i id="handle" class="icon-reorder"></i>
+    </div>
 </div>
