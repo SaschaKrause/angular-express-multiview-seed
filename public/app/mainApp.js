@@ -1,6 +1,7 @@
 var mainApp = angular.module('mainApp', [
     'counterComponent',
-    'notificationBarComponent'
+    'notificationBarComponent',
+    'quickCounterSettingsPopupComponent'
 ]);
 
 mainApp.run(function(){});

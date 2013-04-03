@@ -4,10 +4,10 @@ function addDetailCounterService(app) {
         var counter = {};
 
         var counterOption = {
-            direction: 'down',
+            direction: 'up',
             minutes: 23,
             seconds: 40,
-            hours: 1,
+            hours: 10,
             days: 0,
             updateIntervalInMilliseconds: 1000,
             name: 'my first counter'
