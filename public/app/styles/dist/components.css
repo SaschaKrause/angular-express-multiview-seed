@@ -1,0 +1,6 @@
+.counter-comp .countDigit{overflow:hidden;float:left;background-color:rgba(245, 245, 245, 0.9);font-family:'Unica One',sans-serif;font-size:80pt;height:100%;width:80px;text-align:center;font-weight:bold;color:rgba(0, 0, 0, 0.75);}
+.counter-comp .countDigitSpacer{overflow:hidden;width:3px;height:100%;float:left;}
+.counter-comp .countDigitColon{overflow:hidden;margin:0 15px;font-family:'Chivo',sans-serif;font-size:70pt;height:100%;float:left;font-weight:bold;color:rgba(245, 245, 245, 0.5);}
+.counter-comp .countPanel{line-height:92pt;height:120px;padding:10px;background-color:rgba(0, 0, 0, 0.15);}
+.counter-comp{margin-left:auto;margin-right:auto;display:table;height:50%;}
+.counter-comp .counter-control{text-align:center;background-color:rgba(0, 0, 0, 0.15);}
