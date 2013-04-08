@@ -6,8 +6,10 @@ quickCounterSettingsPopupComponent.directive('quickCounterSettingsPopup', functi
         templateUrl: 'app/components/quick-counter-settings-popup/quickCounterSettingsPopupTpl.html',
         link: function linkFn($scope, element, attrs) {
             var parent = $("#" + attrs.parent);
+            var popupModalContainer = element.find('.quick-counter-settings-popup-comp');
 
-            countAreaResizeService.notifyOnResize(resizeComponent);
+            // listen to the resize events which is broadcasted by the countAreaResizeService
+            countAreaResizeService.listenToResize(resizeComponent);
 
             // need to be resized on start (otherwise, this component has no height)
             resizeComponent();
@@ -15,7 +17,7 @@ quickCounterSettingsPopupComponent.directive('quickCounterSettingsPopup', functi
 
             function resizeComponent() {
                 // set up the elements height to the parents container height
-                element.find('.quick-counter-settings-popup-comp').css({height: parent.height() + "px"});
+                popupModalContainer.css({height: parent.height() + "px"});
             }
         }
     }

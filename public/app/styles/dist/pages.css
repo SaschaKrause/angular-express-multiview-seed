@@ -1,6 +1,6 @@
 .main-page .example{color:blue;}
 #detail-top-area{background-color:#2f353e;height:400px;color:#efefef;}
-#handle{background-color:#dddddd;cursor:n-resize;position:absolute;display:inline-block;left:0;right:0;margin-left:auto;margin-right:auto;padding:5px 0;width:50px;text-align:center;font-size:8pt;color:#b0b0b0;}
-#handle:hover,#handle.ui-draggable-dragging{background-color:#d6574b;color:white;}
-#handle-constrain-container{position:absolute;display:inline-block;left:0;right:0;top:400px;margin-left:auto;margin-right:auto;width:70px;height:400px;z-index:-20;}
+#detail-resize-tool{background-color:#dddddd;cursor:n-resize;position:absolute;display:inline-block;left:0;right:0;margin-left:auto;margin-right:auto;padding:5px 0;width:50px;text-align:center;font-size:8pt;color:#b0b0b0;}
+#detail-resize-tool:hover,#handle.ui-draggable-dragging{background-color:#d6574b;color:white;}
+#detail-resize-constrain-container{position:absolute;display:inline-block;left:0;right:0;top:400px;margin-left:auto;margin-right:auto;width:70px;height:400px;z-index:-20;}
 .detail-page .example{color:red;}

@@ -7,18 +7,17 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
 //        scope: {controls: '@controls'},
         link: function linking($scope, element, attrs) {
 
-
             $scope.options = {
                 showControls: attrs.showControls
             };
 
-            var countPanel = element.find(".countPanel");
-            var counterDigit = element.find(".countDigit");
-            var counterDigitSpacer = element.find(".countDigitSpacer");
-            var counterDigitColon = element.find(".countDigitColon");
+            var countPanelEl = element.find(".countPanel");
+            var counterDigitEl = element.find(".countDigit");
+            var counterDigitSpacerEl = element.find(".countDigitSpacer");
+            var counterDigitColonEl = element.find(".countDigitColon");
 
-            var countPanelInitialHeight = countPanel.height();
-            var countPanelInitialLineHeight = parseFloat(countPanel.css('line-height').split('px')[0])
+            var countPanelInitialHeight = countPanelEl.height();
+            var countPanelInitialLineHeight = parseFloat(countPanelEl.css('line-height').split('px')[0]);
 
             $scope.counter = {
                 h1: '-',
@@ -31,35 +30,19 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
                 suspended: false
             };
 
-            countAreaResizeService.notifyOnResize(resizePanelToScaleFactor);
-            detailCounterService.notifyAt({seconds: 5, when: 'afterStart'}, notifyAfterStart);
 
-            function notifyAfterStart(countreeRef, ms) {
-                console.log("notified after start " + ms);
-            }
+            countAreaResizeService.listenToResize(resizePanelToScaleFactor);
 
-            /*            $scope.change = function change() {
-             var arr = this.counter.input.split(':');
-
-             this.counter.h1 = arr[0][0];
-             this.counter.h2 = arr[0][1];
-             this.counter.m1 = arr[1][0];
-             this.counter.m2 = arr[1][1];
-             this.counter.s1 = arr[2][0];
-             this.counter.s2 = arr[2][1];
-             this.counter.state =
-             };*/
+//            detailCounterService.notifyAt({seconds: 5, when: 'afterStart'}, notifyAfterStart);
 
             $scope.counter.state = detailCounterService.countreeReference.state;
 
-            $scope.$watch('counter.s2', function (newValue, oldValue) {
-                console.log("newValue: " + newValue + " oldValue: " + oldValue);
-//                $scope.counter = $scope.counter + 1;
-            }, true);
+//            $scope.$watch('counter.s2', function (newValue, oldValue) {
+//                console.log("newValue: " + newValue + " oldValue: " + oldValue);
+//            }, true);
 
 
             $scope.startCounting = function startCounting() {
-//                $scope.counter.s1 =  parseInt($scope.counter.s1) +1 +"";
                 detailCounterService.restartCounting(onCountInterval);
             };
 
@@ -107,12 +90,12 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
             }
 
             function resizePanelToScaleFactor(scaleFactor) {
-                countPanel.css({height: (countPanelInitialHeight * scaleFactor) + 'px'});
-                countPanel.css({'line-height': (countPanelInitialLineHeight * scaleFactor) + 'px'});
-                counterDigit.css({width: counterDigit.height() / 1.5 + 'px'});
-                counterDigit.css({'font-size': counterDigit.height() / 1.5 + 'pt'});
-                counterDigitColon.css({'font-size': counterDigit.height() / 1.7 + 'pt'});
-                counterDigitSpacer.css({width: counterDigit.width() / 18 + 'px'});
+                countPanelEl.css({height: (countPanelInitialHeight * scaleFactor) + 'px'});
+                countPanelEl.css({'line-height': (countPanelInitialLineHeight * scaleFactor) + 'px'});
+                counterDigitEl.css({width: counterDigitEl.height() / 1.5 + 'px'});
+                counterDigitEl.css({'font-size': counterDigitEl.height() / 1.5 + 'pt'});
+                counterDigitColonEl.css({'font-size': counterDigitEl.height() / 1.7 + 'pt'});
+                counterDigitSpacerEl.css({width: counterDigitEl.width() / 18 + 'px'});
             }
 
         }

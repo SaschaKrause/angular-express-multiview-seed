@@ -1,25 +1,41 @@
 function MainPageCtrl($scope, countAreaResizeService, detailCounterService) {
 
-    var defaultDetailTopAreaHeight = $("#detail-top-area").height();
+    // container IDs
+    var RESIZE_HANDLER_CONSTRAIN_CONTAINER_ID = "#detail-resize-constrain-container";
 
-    function scaleTopContainer(event, ui) {
+    // jquery elements. Fetched only once.
+    var jQTopArea = $("#detail-top-area");
+    var jQResizeHandler = $('#detail-resize-tool');
+    var initialDetailTopAreaHeight = jQTopArea.height();
+
+    /**
+     *
+     * @param event the mouse events that triggered the resizing
+     * @param ui
+     */
+    function resizeTopContainer(event, ui) {
+
+        // every time this function is invoked, we need to get the new height from the top container
+        var currentDetailTopAreaHeight = jQTopArea.height();
+        var resizeFactor = parseFloat(currentDetailTopAreaHeight) / parseFloat(initialDetailTopAreaHeight);
 
         if (event && ui) {
-            $("#detail-top-area").css({height: ui.offset.top});
+            jQTopArea.css({height: ui.offset.top});
         }
 
-        countAreaResizeService.areaResized(parseFloat($("#detail-top-area").height()) / parseFloat(defaultDetailTopAreaHeight));
-
-
+        // broadcast top-area resize event via countAreaResizeService
+        countAreaResizeService.fireResizeEvent(resizeFactor);
     }
 
-    $("#handle").draggable({ axis: "y",
+    // add the dragging functionality to the resizeHandler
+    jQResizeHandler.draggable({ axis: "y",
         scroll: false,
-        drag: scaleTopContainer,
-        containment: "#handle-constrain-container",
+        drag: resizeTopContainer,
+        containment: RESIZE_HANDLER_CONSTRAIN_CONTAINER_ID,
         cursor: "n-resize"});
 
     $scope.msg = 'ausm main ctrl';
+
 
     $scope.emitChange = function emitChange(eventName) {
         this.$emit(eventName);
@@ -27,7 +43,7 @@ function MainPageCtrl($scope, countAreaResizeService, detailCounterService) {
     };
 
     $scope.doStuff = function doStuff(scaleFactor) {
-        countAreaResizeService.areaResized(scaleFactor);
+        countAreaResizeService.fireResizeEvent(scaleFactor);
     };
 
     $scope.suspendCounting = function () {
