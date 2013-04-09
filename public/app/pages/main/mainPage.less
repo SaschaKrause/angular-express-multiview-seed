@@ -28,7 +28,7 @@
 }
 
 #detail-resize-tool:hover, #handle.ui-draggable-dragging {
-  background-color: #d6574b;
+  background-color: @highlightColor;
   color:white;
 }
 #detail-resize-constrain-container {
@@ -90,4 +90,10 @@
   background-color: rgba(255, 255, 255, 0.04);
   display: inline;
   padding: 2px 5px;
+  cursor: pointer;
+}
+
+#detail-counter-change-settings:hover, #detail-counter-change-settings.active-true {
+  background-color: @highlightColor;
+  color:white;
 }

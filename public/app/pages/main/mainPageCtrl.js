@@ -36,7 +36,12 @@ function MainPageCtrl($scope, countAreaResizeService, detailCounterService) {
 
     $scope.msg = 'ausm main ctrl';
 
+    $scope.showPopup = function() {
+           $scope.popupVisible = true;
+          console.log("showPopup");
+    };
 
+    $scope.popupVisible = false;
     $scope.emitChange = function emitChange(eventName) {
         this.$emit(eventName);
         console.log(eventName);
