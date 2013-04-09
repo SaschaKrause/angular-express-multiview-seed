@@ -3,4 +3,11 @@
 #detail-resize-tool{background-color:#dddddd;cursor:n-resize;position:absolute;display:inline-block;left:0;right:0;margin-left:auto;margin-right:auto;padding:5px 0;width:50px;text-align:center;font-size:8pt;color:#b0b0b0;}
 #detail-resize-tool:hover,#handle.ui-draggable-dragging{background-color:#d6574b;color:white;}
 #detail-resize-constrain-container{position:absolute;display:inline-block;left:0;right:0;top:400px;margin-left:auto;margin-right:auto;width:70px;height:400px;z-index:-20;}
+#detail-counter-title-container{height:30%;margin:auto;display:table;}
+#detail-counter-title-container .center-wrapper{text-align:center;display:table-cell;vertical-align:middle;}
+#detail-counter-title-container .title{font-family:'Open Sans',sans-serif;font-size:30pt;line-height:50pt;letter-spacing:2pt;color:#f0f0f0;overflow:hidden;}
+#detail-counter-title-container .sub-title{font-family:'Open Sans',sans-serif;font-size:13pt;line-height:22pt;letter-spacing:1pt;color:rgba(255, 255, 255, 0.5);overflow:hidden;}
+#detail-counter-comp{height:50%;}
+#detail-notification-bar{height:20%;}
+#detail-counter-change-settings{background-color:rgba(255, 255, 255, 0.04);display:inline;padding:2px 5px;}
 .detail-page .example{color:red;}

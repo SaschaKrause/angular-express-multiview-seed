@@ -6,14 +6,20 @@
 
     <div id="detail-top-area">
         <notification-bar></notification-bar>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
         <!--<input type="button" ng-click="suspendCounting()" class="btn" value="suspend from main"/>-->
         <!--<input type="button" ng-click="resumeCounting()" class="btn" value="resume from main"/>-->
-        asdf
-        <counter show-controls="true"></counter>
+
+        <div id="detail-counter-title-container">
+            <div class="center-wrapper">
+                <div class="title">Time at work</div>
+                <div class="sub-title">counting up from <div id="detail-counter-change-settings">00:00:00</div></div>
+            </div>
+        </div>
+
+        <counter id="detail-counter-comp" show-controls="true"></counter>
+
+        <div id="detail-notification-bar">asd</div>
+
 
         <!-- stuff -->
         <quick-counter-settings-popup parent="detail-top-area" ng-show="checked"></quick-counter-settings-popup>
