@@ -12,15 +12,15 @@ quickCounterSettingsPopupComponent.directive('quickCounterSettingsPopup', functi
             var popupModalContainer = element.find('.quick-counter-settings-popup-comp');
             var popup = element.find('#quick-counter-real-popup');
 
-            $scope.$watch('popupVisible', function(newValue, oldValue) {
+            $scope.$watch('page.popupVisible', function(newValue, oldValue) {
                 console.log("visible: " + newValue + "---" + positionRelativeTo.offset().top);
 
                 layoutPopup();
             });
 
- /*           $scope.close = function() {
-                $scope.popupVisible = false;
-            }*/
+            $scope.close = function() {
+                $scope.page.popupVisible = false;
+            };
             // listen to the resize events which is broadcasted by the countAreaResizeService
             countAreaResizeService.listenToResize(resizeComponent);
 
@@ -35,8 +35,8 @@ quickCounterSettingsPopupComponent.directive('quickCounterSettingsPopup', functi
             }
 
             function layoutPopup() {
-                var offsetTop = positionRelativeTo.offset().top;
-                var offsetLeft = positionRelativeTo.offset().left + positionRelativeTo.width() + 20;
+                var offsetTop = positionRelativeTo.offset().top - 10;
+                var offsetLeft = positionRelativeTo.offset().left + positionRelativeTo.width() + 22;
 
                 popup.css({left: offsetLeft, top: offsetTop});
 

@@ -9,7 +9,7 @@ function addDetailCounterService(app) {
             seconds: 40,
             hours: 10,
             days: 0,
-            updateIntervalInMilliseconds: 1000,
+            updateIntervalInMilliseconds: 55,
             name: 'my first counter'
         };
 

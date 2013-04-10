@@ -997,7 +997,11 @@ a.label:hover,a.label:focus,a.badge:hover,a.badge:focus{color:#ffffff;text-decor
 .counter-comp .counter-control i{cursor:pointer;padding:20px 22px;font-size:16pt;line-height:44pt;width:68px;color:rgba(245, 245, 245, 0.9);}
 .counter-comp .counter-control i:hover{background-color:rgba(0, 0, 0, 0.22);color:white;}
 .quick-counter-settings-popup-comp{z-index:4;background-color:rgba(0, 0, 0, 0.45);position:absolute;width:100%;top:0;}
-#quick-counter-real-popup{z-index:5;background-color:#6ea448;position:absolute;top:0;width:0;height:100px;width:250px;}
+#quick-counter-real-popup{z-index:5;background-color:#6ea448;position:absolute;top:0;width:0;height:120px;width:250px;}
+#quick-counter-real-popup .arrow-left{width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:12px solid #6ea448;position:absolute;left:-12px;top:15px;}
+#quick-counter-real-popup .content{padding:8px;}
+#quick-counter-real-popup .close-btn{display:inline;padding:2px 5px;background-color:rgba(255, 255, 255, 0.2);cursor:pointer;}
+#quick-counter-real-popup .close-btn:hover{background-color:rgba(0, 0, 0, 0.15);}
 body{background-color:#f9f9f9;color:#303030;}
 #header{color:#303030;}
 h2{color:#303030;}

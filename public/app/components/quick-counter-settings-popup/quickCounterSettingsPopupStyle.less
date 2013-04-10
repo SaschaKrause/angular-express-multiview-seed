@@ -1,5 +1,5 @@
 .quick-counter-settings-popup-comp {
-//  height will be set from the directive (by looking up the parents container height)
+  //  height will be set from the directive (by looking up the parents container height)
   z-index: 4;
   background-color: rgba(0, 0, 0, 0.45);
   position: absolute;
@@ -11,8 +11,36 @@
   z-index: 5;
   background-color: @highlightColor;
   position: absolute;
-  top:0;
+  top: 0;
   width: 0;
-  height: 100px;
+  height: 120px;
   width: 250px;
+}
+
+#quick-counter-real-popup .arrow-left {
+  width: 0;
+  height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-right: 12px solid @highlightColor;
+  position: absolute;
+  left: -12px;
+  top: 15px
+}
+
+#quick-counter-real-popup .content {
+//  height: 100%;
+//  width: 100%;
+  padding: 8px;
+}
+
+#quick-counter-real-popup .close-btn {
+  display: inline;
+  padding: 2px 5px;
+  background-color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+#quick-counter-real-popup .close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.15);
 }

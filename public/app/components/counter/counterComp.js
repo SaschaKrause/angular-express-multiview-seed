@@ -26,6 +26,7 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
                 m2: '-',
                 s1: '-',
                 s2: '-',
+                ms: '-',
                 counting: false,
                 suspended: false
             };
@@ -85,6 +86,7 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
                 $scope.counter.m2 = m.split('')[1];
                 $scope.counter.s1 = s.split('')[0];
                 $scope.counter.s2 = s.split('')[1];
+                $scope.counter.ms = ms;
                 $scope.safeApply();
 
             }

@@ -13,7 +13,7 @@
             <div class="center-wrapper">
                 <div class="title">Time at work</div>
                 <div class="sub-title">counting up from
-                    <div id="detail-counter-change-settings" ng-click="showPopup()" class="active-{{popupVisible}}">
+                    <div id="detail-counter-change-settings" ng-click="showPopup()" class="active-{{page.popupVisible}}">
                         00:00:00
                     </div>
                 </div>
@@ -23,7 +23,7 @@
         <counter id="detail-counter-comp" show-controls="true"></counter>
         <div id="detail-notification-bar">asd</div>
 
-        <quick-counter-settings-popup parent-el="detail-top-area" position-relative-to="detail-counter-change-settings" ng-show="popupVisible" visible={{popupVisible}}></quick-counter-settings-popup>
+        <quick-counter-settings-popup parent-el="detail-top-area" position-relative-to="detail-counter-change-settings" ng-show="page.popupVisible"></quick-counter-settings-popup>
     </div>
 
     <div id="detail-meta-area">
@@ -34,14 +34,14 @@
 
     <div class="checkbox-with-label">
         <div style=" float: left">
-            <input id="show-popup" type="checkbox" ng-model="popupVisible"
-                   style="position: absolute;top: -1px;left: 0;">
+            <input id="show-popup" type="checkbox" ng-model="page.popupVisible"
+                  >
         </div>
         <label for="show-popup" style="margin-left:10px; float: left">show popup</label>
 
         <div style="clear: both"></div>
     </div>
 
-    popup visible? : {{popupVisible}};
+    popup visible? : {{page.popupVisible}};
     <br/>
 </div>
