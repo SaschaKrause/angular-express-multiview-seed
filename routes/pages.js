@@ -2,7 +2,9 @@
  * Configure all pages routes that should be accessible
  * @param webApp the main app that should be configured
  */
-module.exports.configure = function (webApp) {
+var config;
+module.exports.configure = function (webApp, configT) {
+    config = configT;
     webApp.get('/', routeIndex);
     webApp.get('/detail', routeDetail);
 };
@@ -13,7 +15,9 @@ function routeIndex(req, res) {
     res.render('main', {
         title: 'main page',
         ngPageController: 'MainPageCtrl',
-        cssPageIdentifier: 'main-page'
+        cssPageIdentifier: 'main-page',
+        jsFolder: config.env.lib.jsFolder,
+        jsFileSuffix: config.env.lib.jsFileSuffix
     })
 }
 

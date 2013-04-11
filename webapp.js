@@ -6,6 +6,7 @@ var express = require('express')
     , apiRoutes = require('./routes/api')
     , engine = require('ejs-locals')
     , http = require('http')
+    , config = require('./config')
     , path = require('path');
 
 var webApp = express();
@@ -30,7 +31,7 @@ webApp.configure(function () {
         dest: path.join(__dirname, 'public', 'app','styles','dist'),
         src: path.join(__dirname, 'public', 'app','styles','less'),
         prefix: '/app/styles/dist',
-        force: 'true', // Always re-compile less files on each request.
+        force: config.env.styles.compileOnEveryRequest, // Always re-compile less files on each request.
         compress: true
     }));
     webApp.use(express.static(path.join(__dirname, 'public')));
@@ -41,7 +42,7 @@ webApp.configure('development', function () {
 });
 
 // configure the routing
-pageRoutes.configure(webApp);
+pageRoutes.configure(webApp, config);
 apiRoutes.configure(webApp);
 
 //start the server

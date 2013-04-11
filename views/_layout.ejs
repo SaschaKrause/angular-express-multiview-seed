@@ -25,6 +25,8 @@
 
 <div ng-controller="<%=ngPageController%>" class="<%=cssPageIdentifier%>">
     <%-body -%>
+
+
 </div>
 
 <footer>
@@ -32,10 +34,9 @@
 </footer>
 
 <!--dependencies-->
-<script src="app/lib/Countree.js"></script>
-<script src="app/lib/jquery.js"></script>
-<!--<script src="app/lib/plugins/jquery.icheck.min.js"></script>-->
-<script src="app/lib/angular.js"></script>
+<script src="app/lib/<%=jsFolder%>/Countree.<%=jsFileSuffix%>js"></script>
+<script src="app/lib/<%=jsFolder%>/jquery.<%=jsFileSuffix%>js"></script>
+<script src="app/lib/<%=jsFolder%>/angular.<%=jsFileSuffix%>js"></script>
 
 <!--components-->
 <script src="app/components/counter/counterComp.js"></script>

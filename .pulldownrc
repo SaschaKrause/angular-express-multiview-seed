@@ -3,19 +3,27 @@
     "dependencies": [
         {
             "source": "https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js",
-            "output": "angular.js"
+            "output": "dev/angular.js"
         },
         {
             "source": "https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js",
-            "output": "angular.min.js"
+            "output": "production/angular.min.js"
         },
         {
             "source": "http://code.jquery.com/jquery-1.9.1.js",
-            "output": "jquery.js"
+            "output": "dev/jquery.js"
+        },
+        {
+            "source": "http://code.jquery.com/jquery-1.9.1.min.js",
+            "output": "production/jquery.min.js"
         },
         {
             "source": "https://raw.github.com/SaschaKrause/Countree.js/master/dist/Countree.js",
-            "output": "Countree.js"
+            "output": "dev/Countree.js"
+        },
+        {
+            "source": "https://raw.github.com/SaschaKrause/Countree.js/master/dist/Countree.js",
+            "output": "production/Countree.min.js"
         }
     ]
 }
