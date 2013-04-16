@@ -13,7 +13,7 @@ module.exports.configure = function (webApp, configT) {
 
 function routeIndex(req, res) {
     res.render('main', {
-        title: 'main page',
+        title: 'Countrees - Lets start counting',
         ngPageController: 'MainPageCtrl',
         cssPageIdentifier: 'main-page',
         jsFolder: config.env.lib.jsFolder,
