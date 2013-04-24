@@ -42,9 +42,10 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
 //                console.log("newValue: " + newValue + " oldValue: " + oldValue);
 //            }, true);
 
+            detailCounterService.setIntervalCallback(onCountInterval);
 
             $scope.startCounting = function startCounting() {
-                detailCounterService.restartCounting(onCountInterval);
+                detailCounterService.restartCounting();
             };
 
             $scope.suspendCounting = function suspendCounting() {
@@ -71,7 +72,6 @@ counterModule.directive('counter', function createDirective(countAreaResizeServi
             });
 
             function onCountInterval(countResult) {
-                var msPassed = countResult.getMillisecondsLeft();
                 var d = countResult.formattedTime().getDays(1);
                 var h = countResult.formattedTime().getHours(2);
                 var m = countResult.formattedTime().getMinutes(2);

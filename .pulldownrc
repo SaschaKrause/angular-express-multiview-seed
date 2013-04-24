@@ -22,7 +22,7 @@
             "output": "dev/Countree.js"
         },
         {
-            "source": "https://raw.github.com/SaschaKrause/Countree.js/master/dist/Countree.js",
+            "source": "https://raw.github.com/SaschaKrause/Countree.js/master/dist/Countree.min.js",
             "output": "production/Countree.min.js"
         }
     ]

@@ -1,30 +1,12 @@
 /*
  * Countree
- * https://github.com/SaschaKrause/Countree
+ * https://github.com/SaschaKrause/Countree.js
  *
  * Copyright (c) 2013 Sascha Krause
  * Licensed under the MIT license.
  */
 
-// TODO: [FEATURE]  provide the possibility to register some kind of event listener to a countree which is called on custom events (e.g. "5 minutes before counter ends")
-// TODO: [FEATURE]  be able to add the configOptions after instantiation (e.g. setOptions(options))
-// TODO: [FEATURE]  get progress in % (e.g. 13% are already counted down/up)
-// TODO: [FEATURE]  provide option: CONTINUE_AFTER_FINISH and STOP_AFTER_FINISH (e.g. when counting from 10, should the counter stop at 0, or should it go further [e.g. to -100])
-// TODO: [FEATURE]  provide the possibility to not just only count the time, but also other numeric stuff (e.g. count +1 every time one hits a button)
-// TODO: [BUG]      'notifyAt' seems to be buggy: when counting down the 'beforeEnd' event won't fire (when counting up, the 'afterStart' seems broken)
-// TODO: [BUG]      when not displaying the milliseconds to the user, it seems like a bug (to him) that a second is "missing" (because of rounding issues)
-// TODO: [BUG]      Error handling strategy (and convenience methods!) for public methods
-// TODO: [TEST]     add some Jasmine tests
-// TODO: [DEMO]     use a templating framework (e.g. handlebars) to demonstrate the power of the CountResult.formattedTime()
-
 (function (exports) {
-
-    /** @constant */
-    var COUNT_DIRECTION = {
-        DOWN: 'down',
-        UP: 'up'
-    };
-
     /** @constant */
     var TIME_UNIT = {
         MILLISECONDS: 'ms',
@@ -37,235 +19,333 @@
     var COUNTER_STATE = {
         COUNTING: 'counting',
         SUSPENDED: 'suspended',
-        RESETED: 'reseted',
         NOT_STARTED: 'not started'
     };
 
+    var ERROR_MESSAGES = {
+        ERR_01_OPTIONS_NOT_SET: "COUNTREE-ERR-01: Please provide some counter options. You can add them directly add instantiation (e.g. new Countree({})) or after that via countree.setOptions({}). Just make sure that there are options provided before starting the Countree.",
+        ERR_02_OPTIONS_COUNT_TYPE_WRONG: "COUNTREE-ERR-02: You need to provide one of the following object inside your Countree option configuration: 'customTime:{}' OR 'dateTime:{}'",
+        ERR_03_OPTIONS_CUSTOM_COUNT_DIRECTION_UNKNOWN: "COUNTREE-ERR-03: You need to specify an 'direction' (with 'up' or 'down') or provide an object to the 'stopAt' property",
+        ERR_04_OPTIONS_CALLBACK_NOT_PROVIDED: "COUNTREE-ERR-04: No 'onInterval'-callback defined in countree options. This callback is necessary as it will be invoked on counting updates at each interval"
+    };
+
+
     /**
      *
-     * @param configOptions
+     * @param paramOptions
      * @constructor
      */
-    function Countree(configOptions) {
+    function Countree(paramOptions) {
 
         var that = this;
 
-        /**
-         * The interval reference is used to identify the active interval, so that it could be cleared (e.g. for suspending
-         * or restarting).
-         * A counter can only have one interval reference (because a single counter can only create a single interval).
-         * @type {Number}
-         */
-        var intervalRef;
+        this.version = '0.0.1';
 
         /**
-         * The milliseconds left/to go (depends if counting up or down) to count from/to when resuming the counter after
-         * it is suspended.
-         * @type {Number}
+         * these properties got filled after the users options are evaluated and have always the
+         * @type {Object}
          */
-        var millisecondsForContinuePoint = 0;
+        var internalCounterProperties = {
+            /**
+             *
+             */
+            nowAsDate: null,
+            /**
+             *  This should be true after the users options has been set.
+             */
+            userOptionsProvided: false,
+            /**
+             *
+             */
+            startCounterFromMilliseconds: null,
+            /**
+             *
+             */
+            stopCounterAtMilliseconds: null,
+            /**
+             *
+             */
+            alreadyPassedMilliseconds: -1,
+            /**
+             *
+             */
+            isFinished: false,
+            /**
+             * The interval reference is used to identify the active interval, so that it could be cleared (e.g. for suspending or restarting).
+             * A counter can only have one interval reference (because a single counter can only create a single interval).
+             */
+            countingIntervalReference: null,
+            /**
+             *
+             */
+            onIntervalCallbackFromUser: null,
+            /**
+             *
+             */
+            countDirection: 'up',
+            /**
+             *
+             */
+            countToDate: null
+        };
+
+        // fill options with some basic defaults
+        var options = {
+            updateIntervalInMilliseconds: 1000,
+            name: 'untitled',
+            stopWhenFinished: false
+        };
+
+        var internalPropertiesHelper = new InternalPropertiesHelper(options, internalCounterProperties);
+
+        this.state = COUNTER_STATE.NOT_STARTED;
+
+        this.setOptions = function setOptions(paramOptions) {
+            // Update and extend the default options with the user config options
+            extendObjectBy(options, paramOptions);
+        };
+
+        this.setIntervalCallback = function setIntervalCallback(onInterval) {
+            options.onInterval = onInterval;
+        };
+
+//      update and extend the default options with the user config options (if provided via constructor)
+        paramOptions && this.setOptions(paramOptions);
+
+
+        // this countResult instance contain all information about the current counter values (e.g. milliseconds left/to go).
+        // This result will be provided as parameter to the users interval callback (which is invoked at each interval tick).
+        var countResult = new CountResult(this, internalCounterProperties);
+
+        /**
+         * Init the countree by calling the user's onInterval-callback ONCE without starting the counter.
+         * This is great for updating the view with the calculated starting milliseconds.
+         */
+        this.init = function init() {
+            internalPropertiesHelper.updateInternalCountPropertiesFromOptions(that);
+            checkIfOptionsHasBeenSet();
+            countResult.init();
+            internalCounterProperties.onIntervalCallbackFromUser(countResult);
+            internalCounterProperties.alreadyPassedMilliseconds = 0;
+            countResult.countNotifier.fireNotificationEvent(countResult.countNotifier.EVENT.ON_INIT);
+        };
+
+        /**
+         * Kick of the counting interval. Every "interval-tick" the onInterval callback (provided via options) is invoked
+         * and the newly calculated countResult is provided as parameter.
+         */
+        this.start = function start() {
+            // clear the interval (so that ONLY ONE COUNTING INTERVAL is present at a time - even if this method is invoked more than once)
+            clearCountingInterval();
+            countResult.countNotifier.fireNotificationEvent(countResult.countNotifier.EVENT.ON_START);
+            this.init();
+            internalCounterProperties.isFinished = false;
+            countWithInterval(new Date(), false);
+        };
+
+        /**
+         * Suspend this counter by clearing the counting interval.
+         */
+        this.suspend = function suspend() {
+            clearCountingInterval();
+            countResult.countNotifier.fireNotificationEvent(countResult.countNotifier.EVENT.ON_SUSPEND);
+        };
+
+        /**
+         * Resume this counter. This will only have an effect when the counter has been initialized AND the counter is
+         * currently not counting.
+         */
+        this.resume = function resume() {
+            if (!internalCounterProperties.countingIntervalReference) {
+                countResult.countNotifier.fireNotificationEvent(countResult.countNotifier.EVENT.ON_RESUME);
+                countWithInterval(new Date(), true);
+            }
+        };
+
+
+        this.notifyAt = function notifyAt(notifyConfig, callback) {
+            countResult.countNotifier.addNotifier(notifyConfig, callback);
+        };
+
+        function checkIfOptionsHasBeenSet() {
+            if (!internalCounterProperties.userOptionsProvided) {
+                console.error(ERROR_MESSAGES.ERR_01_OPTIONS_NOT_SET);
+            }
+        }
+
+        function clearCountingInterval() {
+            clearInterval(internalCounterProperties.countingIntervalReference);
+            // indicate that no interval is available anymore.
+            internalCounterProperties.countingIntervalReference = null;
+        }
+
+        function countWithInterval(countStartDate, resumed) {
+
+            // if the counter has been resumed, we need to add a time offset to the alreadyPassedMilliseconds
+            var timeToAddWhenResumed = resumed ? internalCounterProperties.alreadyPassedMilliseconds : 0;
+
+            /**
+             * invoked at each interval tick.
+             */
+            function proceedInterval() {
+                var now = new Date();
+                // update the passed milliseconds. These will only be used to calculate the countResult when counting from the "customTime" option
+                internalCounterProperties.alreadyPassedMilliseconds = (now.getTime() - countStartDate.getTime()) + timeToAddWhenResumed;
+                // the nowAsDate property will only be used to calculate the countResult when counting towards the "dateTime" option
+                internalCounterProperties.nowAsDate = now;
+                // recalculate the countResult based on the updated internalCountProperties
+                countResult.update();
+                // lets invoke the users callback and provide the countResult as parameter
+                internalCounterProperties.onIntervalCallbackFromUser(countResult);
+                // check if counter finished. If so - clear the counting interval.
+                if (internalCounterProperties.isFinished) {
+                    clearCountingInterval();
+                    countResult.countNotifier.fireNotificationEvent(countResult.countNotifier.EVENT.ON_FINISH);
+                }
+            }
+
+            // kick of the interval
+            internalCounterProperties.countingIntervalReference = setInterval(proceedInterval, options.updateIntervalInMilliseconds);
+        }
+
+    }
+
+
+    /**
+     *
+     * @constructor
+     */
+    function CountResult(countreeRef, internalPropertiesRef) {
+        var formattedTimeTmp = new FormattedTime();
+        var that = this;
+        this.calculatedMilliseconds = 0;
+        this.countNotifier = new CountNotifier(countreeRef, internalPropertiesRef);
 
         /**
          *
          */
-        var intervalCallbackRef;
-
-
-        this.version = '0.0.1';
-
-        // fill options with defaults
-        // furthermore, this gives an overview of the available (and settable) user configurable options.
-        this.options = {
-            milliseconds: 0,
-            seconds: 0,
-            minutes: 0,
-            hours: 0,
-            days: 0,
-            updateIntervalInMilliseconds: 1000,
-            direction: COUNT_DIRECTION.UP,
-            name: 'untitled'
+        this.init = function init() {
+            this.calculatedMilliseconds = internalPropertiesRef.startCounterFromMilliseconds;
+            formattedTimeTmp.update(this.calculatedMilliseconds);
         };
 
-        this.state = COUNTER_STATE.NOT_STARTED;
-
-        // update and extend the default options with the user config options
-        extendObjectBy(this.options, configOptions);
-
-        // this countResult instance contain all information about the current counter values (e.g. milliseconds left/to go).
-        // This result will be provided as parameter to the users callback (@see start(callback))
-        this.countResult = new CountResult(this, getTotalMillisecondsFromObject(this.options));
-
-        function onCountingInterval(callback, countStartDate, totalMillisecondsToGo, resumed) {
-            //directly update the countResult BEFORE the interval starts (so that the users callback is invoked immediately)
-            updateCounterBeforeIntervalStartIfNeeded(totalMillisecondsToGo, callback, resumed);
-
-            var timeToAddWhenResumed = resumed ? millisecondsForContinuePoint : 0;
-
-            var calculateMilliseconds = function () {
-                if (countDirectionIs(COUNT_DIRECTION.DOWN)) {
-                    millisecondsForContinuePoint = totalMillisecondsToGo - (new Date().getTime() - countStartDate.getTime());
-                }
-                else if (countDirectionIs(COUNT_DIRECTION.UP)) {
-                    millisecondsForContinuePoint = (new Date().getTime() + timeToAddWhenResumed) - countStartDate.getTime();
-                }
-
-                // update the result and forward it to the users callback as a countResult object
-                that.countResult.update(millisecondsForContinuePoint);
-                callback(that.countResult);
-
-                // need to check if the counter is done with counting
-                checkIfCounterFinished(millisecondsForContinuePoint, getTotalMillisecondsFromObject(that.options), callback);
-            };
-
-            return setInterval(calculateMilliseconds, that.options.updateIntervalInMilliseconds);
-        }
+        /**
+         *
+         */
+        this.update = function update() {
+            this.calculatedMilliseconds = calculateResultAndUpdateInternalProperties(internalPropertiesRef.countDirection);
+            formattedTimeTmp.update(this.calculatedMilliseconds);
+        };
 
         /**
-         * @private
+         *
+         * @returns {FormattedTime}
          */
-        function countDirectionIs(countDirection) {
-            return that.options.direction === countDirection;
-        }
-
-        /**
-         * Before the interval starts counting, the result should be forwarded to the callback with its initial value.
-         * But only if the counter is started initially (if resumed === false)
-         * @param totalMillisecondsToGo
-         * @param callback
-         * @param resumed boolean that indicates the the interval was started initially, or if the counter is resumed
-         * after suspend
-         */
-        function updateCounterBeforeIntervalStartIfNeeded(totalMillisecondsToGo, callback, resumed) {
-
-            //only proceed if the counter started initially
-            if(!resumed){
-                if (countDirectionIs(COUNT_DIRECTION.DOWN)) {
-                    that.countResult.update(totalMillisecondsToGo);
-                }
-                //when counting up
-                else if (countDirectionIs(COUNT_DIRECTION.UP)) {
-                    that.countResult.update(0);
-                }
-
-                callback(that.countResult);
-            }
-        }
+        this.formattedTime = function formattedTime() {
+            return formattedTimeTmp;
+        };
 
 
-        function checkIfCounterFinished(millisecondsProceeded, totalMillisecondsToGo, callback) {
-            if (countDirectionIs(COUNT_DIRECTION.UP)) {
-                if (millisecondsProceeded >= totalMillisecondsToGo) {
-                    clearIntervalFromCountree();
-                    that.countResult.countNotifier.fireNotificationEvent(that.countResult.countNotifier.EVENT.ON_FINISH, millisecondsProceeded);
+        function calculateResultAndUpdateInternalProperties(direction) {
+            var result = 0;
+            var counterShouldStop = internalPropertiesRef.stopWhenFinished && internalPropertiesRef.stopCounterAtMilliseconds != null;
+
+            // when counting up (and only when the startCounterFromMilliseconds property is set - which is the case when the "customTime" option is provided)
+            if (direction === 'up' && internalPropertiesRef.startCounterFromMilliseconds != null) {
+                result = internalPropertiesRef.startCounterFromMilliseconds + internalPropertiesRef.alreadyPassedMilliseconds;
+
+                // check if counter should be stopped
+                if (counterShouldStop && result >= internalPropertiesRef.stopCounterAtMilliseconds) {
+                    internalPropertiesRef.isFinished = true;
+                    result = internalPropertiesRef.stopCounterAtMilliseconds;
                 }
             }
-            else if (countDirectionIs(COUNT_DIRECTION.DOWN)) {
-                if (millisecondsProceeded <= 0) {
-                    that.countResult.update(0);
-//                callback(that.countResult);
-                    clearIntervalFromCountree();
-                    that.countResult.countNotifier.fireNotificationEvent(that.countResult.countNotifier.EVENT.ON_FINISH, millisecondsProceeded);
+            // when counting down (and only when the startCounterFromMilliseconds property is set - which is the case when the "customTime" option is provided)
+            else if (direction === 'down' && internalPropertiesRef.startCounterFromMilliseconds != null) {
+                result = internalPropertiesRef.startCounterFromMilliseconds - internalPropertiesRef.alreadyPassedMilliseconds;
+
+                // check if counter should be stopped
+                if (counterShouldStop && result <= internalPropertiesRef.stopCounterAtMilliseconds) {
+                    internalPropertiesRef.isFinished = true;
+                    result = internalPropertiesRef.stopCounterAtMilliseconds;
                 }
             }
-        }
+            // when counting towards a given date
+            else if (internalPropertiesRef.countToDate) {
+                var now = internalPropertiesRef.nowAsDate.getTime();
+                var countTo = internalPropertiesRef.countToDate.getTime();
 
-        function clearIntervalFromCountree() {
-            if (intervalRef) {
-                clearInterval(intervalRef);
+                // if now is "after" the date to count to
+                if (now > countTo) {
+                    result = now - countTo;
+                }
+                else {
+                    result = countTo - now;
+                }
             }
+            return result;
         }
-
-
-        function start(callback) {
-            var millisecondsAtStart = countDirectionIs(COUNT_DIRECTION.DOWN) ? getTotalMillisecondsFromObject(that.options) : 0;
-
-            //remember the users callback to be able to continue the counter without providing the callback again later (on resume())
-            intervalCallbackRef = callback;
-
-            // clear the interval if there is one (so that a "clean restart" is possible)
-            clearIntervalFromCountree();
-
-
-            // start the counter and remember the intervalId as reference for later (e.g. for restarting or suspending)
-            intervalRef = onCountingInterval(intervalCallbackRef, new Date(), getTotalMillisecondsFromObject(that.options), false);
-            that.countResult.countNotifier.resetNotifier();
-
-            that.countResult.countNotifier.fireNotificationEvent(that.countResult.countNotifier.EVENT.ON_START, millisecondsAtStart);
-            that.state = COUNTER_STATE.COUNTING;
-        }
-
-        function suspend() {
-            // clear the interval as it stops the further counting
-            clearIntervalFromCountree();
-            if (that.state === COUNTER_STATE.COUNTING) {
-                that.countResult.countNotifier.fireNotificationEvent(that.countResult.countNotifier.EVENT.ON_SUSPEND, millisecondsForContinuePoint);
-            }
-            that.state = COUNTER_STATE.SUSPENDED;
-        }
-
-        function resume() {
-            // only continue counting if the counter isn't already active and the users callback is available
-            if ((that.state === COUNTER_STATE.SUSPENDED) && intervalCallbackRef) {
-                intervalRef = onCountingInterval(intervalCallbackRef, new Date(), millisecondsForContinuePoint, true);
-                that.countResult.countNotifier.fireNotificationEvent(that.countResult.countNotifier.EVENT.ON_RESUME, millisecondsForContinuePoint);
-                that.state = COUNTER_STATE.COUNTING;
-            }
-        }
-
-        function reset() {
-            // clear the interval if there is one (so that a "clean restart" is possible)
-            clearIntervalFromCountree();
-
-            var millisecondsAtStart = countDirectionIs(COUNT_DIRECTION.DOWN) ? getTotalMillisecondsFromObject(that.options) : 0;
-
-            that.countResult.countNotifier.fireNotificationEvent(that.countResult.countNotifier.EVENT.ON_RESET, millisecondsAtStart);
-            that.countResult.update(millisecondsAtStart);
-            that.state = COUNTER_STATE.RESETED;
-        }
-
-        function notifyAt(notifyConfig, callback) {
-            that.countResult.countNotifier.addNotifier(notifyConfig, callback, that.options.direction);
-        }
-
-
-        this.start = start;
-        this.suspend = suspend;
-        this.resume = resume;
-        this.reset = reset;
-        this.notifyAt = notifyAt;
     }
 
-    /**
-     *
-     * @constructor
-     */
-    function CountResult(countreeRef, millisecondsStartingPoint) {
-        var that = this;
-        var overallMillisecondsLeft = 0;
-        var formattedTimeTmp = new FormattedTime();
+    function CountNotifier(countreeRef, millisecondsStartingPoint) {
+        var notifyAtTimeArray = [];
+        var notifyAtEventArray = [];
 
-        this.countNotifier = new CountNotifier(countreeRef, millisecondsStartingPoint);
+        this.millisecondsStartingPoint = millisecondsStartingPoint;
+        this.countreeReference = countreeRef;
+
+        var WHEN = {
+            BEFORE_END: 'beforeEnd',
+            AFTER_START: 'afterStart'
+        };
+
+        this.EVENT = {
+            ON_INIT: 'onInit',
+            ON_START: 'onStart',
+            ON_FINISH: 'onFinish',
+            ON_RESUME: 'onResume',
+            ON_SUSPEND: 'onSuspend',
+            ON_RESET: 'onReset'
+        };
 
 
-        function update(milliseconds) {
-            overallMillisecondsLeft = milliseconds;
-            formattedTimeTmp.update(milliseconds);
-            //every time the milliseconds are updated, we need to check if there is a notifier that listens to that
-            that.countNotifier.notifyIfNecessary(milliseconds);
-            return overallMillisecondsLeft;
-        }
+        /**
+         * Add a notifier to the CountResult which will invoke the callback when the millisecondsToNotify are reached while counting (notifier will be added to the notifyAtArray property).
+         * @param notifyConfig the config which the milliseconds are calculated from (used to get the time at which the
+         * callback should be triggered)
+         * @param callback triggered when the millisecondsToNotify are reached when counting
+         */
+        this.addNotifier = function addNotifier(notifyConfig, callback) {
 
-        function getMillisecondsLeft() {
-            return overallMillisecondsLeft;
-        }
+            if (notifyConfig.event) {
+                notifyAtEventArray.push({
+                    event: notifyConfig.event,
+                    callback: callback
+                });
+            }
+        };
 
-        function formattedTime() {
-            return formattedTimeTmp;
-        }
+        /**
+         * Resets the notifier so that it is able to fire again when needed.
+         */
+        this.resetNotifier = function resetNotifier() {
+            for (var i = 0; i < notifyAtEventArray.length; ++i) {
+                notifyAtEventArray[i].alreadyFired = false;
+            }
+        };
 
-        this.update = update;
-        this.getMillisecondsLeft = getMillisecondsLeft;
-        this.formattedTime = formattedTime;
+        /**
+         * Fire events and invoke the callbacks if there are any registered.
+         * @param event the fired event name
+         * @param milliseconds the milliseconds at the counting time at which the event has been fired
+         */
+        this.fireNotificationEvent = function fireNotificationEvent(event, milliseconds) {
+            for (var i = 0; i < notifyAtEventArray.length; ++i) {
+                if (notifyAtEventArray[i].event === event) {
+                    notifyAtEventArray[i].callback(countreeRef, milliseconds);
+                }
+            }
+        };
     }
 
     /**
@@ -343,122 +423,82 @@
         this.toString = toString;
     }
 
-    function CountNotifier(countreeRef, millisecondsStartingPoint) {
-        var that = this;
-        var notifyAtTimeArray = [];
-        var notifyAtEventArray = [];
 
-        this.millisecondsStartingPoint = millisecondsStartingPoint;
-        this.countreeReference = countreeRef;
+    /**
+     *
+     * @param options
+     * @param internalCountPropertiesRef
+     * @constructor
+     */
+    function InternalPropertiesHelper(options, internalCountPropertiesRef) {
 
-        var WHEN = {
-            BEFORE_END: 'beforeEnd',
-            AFTER_START: 'afterStart'
-        };
 
-        this.EVENT = {
-            ON_START: 'onStart',
-            ON_FINISH: 'onFinish',
-            ON_RESUME: 'onResume',
-            ON_SUSPEND: 'onSuspend',
-            ON_RESET: 'onReset'
+        this.updateInternalCountPropertiesFromOptions = function updateInternalCountPropertiesFromOptions(countreeRef) {
+
+            countreeRef.name = options.name;
+
+            // Check if there are missing options missing. If so, provide feedback to the user via console.error()
+            checkOptionsAndThrowErrorLogMessagesIfNeeded();
+
+            // The user provided some options, so lets set the corresponding value to the internalCountProperties
+            internalCountPropertiesRef.userOptionsProvided = true;
+            internalCountPropertiesRef.stopWhenFinished = !!options.stopWhenFinished;
+            internalCountPropertiesRef.onIntervalCallbackFromUser = options.onInterval || function () {
+            };
+
+            // now that we have a options object, we need to fill some more internalCounterProperties
+            // (because we will do all the calculations based on the internalCounterProperties instead on the options).
+            fillInternalCounterPropertiesFromOptions();
         };
 
         /**
-         * Add a notifier to the CountResult which will invoke the callback when the millisecondsToNotify are reached while counting (notifier will be added to the notifyAtArray property).
-         * @param notifyConfig the config which the milliseconds are calculated from (used to get the time at which the
-         * callback should be triggered)
-         * @param callback triggered when the millisecondsToNotify are reached when counting
-         * @param countingDirection the direction the counter is currently counting ('down' or 'up')
+         * Throw some console.error() messages to the user's console if option-properties are not provided
          */
-        function addNotifier(notifyConfig, callback, countingDirection) {
-            if (notifyConfig.event) {
-                notifyAtEventArray.push({
-                    event: notifyConfig.event,
-                    callback: callback,
-                    countingDirection: countingDirection
-                });
+        function checkOptionsAndThrowErrorLogMessagesIfNeeded() {
+            // if the onInterval callback is missing
+            !options.onInterval && console.error(ERROR_MESSAGES.ERR_04_OPTIONS_CALLBACK_NOT_PROVIDED);
+        }
+
+
+        function fillInternalCounterPropertiesFromOptions() {
+
+            var isCustomTime = !!options.customTime && !options.dateTime;
+            var isDateTime = !!options.dateTime && !options.customTime;
+
+            if (isCustomTime) {
+                fillFromCustomTime(options.customTime);
+            }
+            // counting up to or down to a provided date
+            else if (isDateTime) {
+                fillFromDateTime(options.dateTime.date);
             }
             else {
-                notifyAtTimeArray.push({
-                    millisecondsToNotify: getTotalMillisecondsFromObject(notifyConfig),
-                    when: notifyConfig.when || WHEN.BEFORE_END,
-                    callback: callback,
-                    alreadyFired: false,
-                    countingDirection: countingDirection
-                });
-            }
-        }
-
-        /**
-         * Resets the notifier so that it is able to fire again when needed.
-         */
-        function resetNotifier() {
-            for (var i = 0; i < notifyAtEventArray.length; ++i) {
-                notifyAtEventArray[i].alreadyFired = false;
-            }
-            for (var k = 0; k < notifyAtTimeArray.length; ++k) {
-                notifyAtTimeArray[k].alreadyFired = false;
-            }
-        }
-
-        function notifyIfNecessary(milliseconds) {
-            var notifyTmp = {};
-            var needToNotifyWhenCountingDownBeforeEnd = false;
-            var needToNotifyWhenCountingDownAfterStart = false;
-            var needToNotifyWhenCountingUpBeforeEnd = false;
-            var needToNotifyWhenCountingUpAfterStart = false;
-
-
-            // loop through all time notifications
-            for (var i = 0; i < notifyAtTimeArray.length; ++i) {
-                notifyTmp = notifyAtTimeArray[i];
-                needToNotifyWhenCountingDownBeforeEnd = (!notifyTmp.alreadyFired &&
-                    notifyTmp.countingDirection === COUNT_DIRECTION.DOWN &&
-                    notifyTmp.when === WHEN.BEFORE_END &&
-                    notifyTmp.millisecondsToNotify >= milliseconds);
-
-                needToNotifyWhenCountingDownAfterStart = (!notifyTmp.alreadyFired &&
-                    notifyTmp.countingDirection === COUNT_DIRECTION.DOWN &&
-                    notifyTmp.when === WHEN.AFTER_START &&
-                    that.millisecondsStartingPoint - notifyTmp.millisecondsToNotify >= milliseconds);
-
-                needToNotifyWhenCountingUpBeforeEnd = (!notifyTmp.alreadyFired &&
-                    notifyTmp.countingDirection === COUNT_DIRECTION.UP &&
-                    notifyTmp.when === WHEN.BEFORE_END &&
-                    that.millisecondsStartingPoint - notifyTmp.millisecondsToNotify <= milliseconds);
-
-                needToNotifyWhenCountingUpAfterStart = (!notifyTmp.alreadyFired &&
-                    notifyTmp.countingDirection === COUNT_DIRECTION.UP &&
-                    notifyTmp.when === WHEN.AFTER_START &&
-                    notifyTmp.millisecondsToNotify <= milliseconds);
-
-                if (needToNotifyWhenCountingDownBeforeEnd || needToNotifyWhenCountingDownAfterStart ||
-                    needToNotifyWhenCountingUpBeforeEnd || needToNotifyWhenCountingUpAfterStart) {
-                    notifyTmp.alreadyFired = true;
-                    notifyTmp.callback(that.countreeReference, milliseconds);
-                }
-            }
-        }
-
-        /**
-         * Fire events and invoke the callbacks if there are any registered.
-         * @param event the fired event name
-         * @param milliseconds the milliseconds at the counting time at which the event has been fired
-         */
-        function fireNotificationEvent(event, milliseconds) {
-            for (var i = 0; i < notifyAtEventArray.length; ++i) {
-                if (notifyAtEventArray[i].event === event) {
-                    notifyAtEventArray[i].callback(that.countreeReference, milliseconds);
-                }
+                console.error(ERROR_MESSAGES.ERR_02_OPTIONS_COUNT_TYPE_WRONG);
             }
         }
 
 
-        this.addNotifier = addNotifier;
-        this.resetNotifier = resetNotifier;
-        this.notifyIfNecessary = notifyIfNecessary;
-        this.fireNotificationEvent = fireNotificationEvent;
+        function fillFromCustomTime(customTime) {
+            // set the startCounterFromMilliseconds at the internalCounterProperties. If nothing is provided from the users options, 0 milliseconds will be used as starting point
+            internalCountPropertiesRef.startCounterFromMilliseconds = getTotalMillisecondsFromTimeObject(customTime.startFrom || {});
+
+            // set the stopAtMilliseconds at the internalCounterProperties (if there user provided a stopAt object (which has do be not empty))
+            if (customTime.stopAt && !isObjectEmpty(customTime.stopAt)) {
+                internalCountPropertiesRef.stopCounterAtMilliseconds = getTotalMillisecondsFromTimeObject(customTime.stopAt);
+                swapCountDirectionIfNeeded();
+            }
+        }
+
+        function fillFromDateTime(dateTime) {
+            console.log(dateTime);
+            internalCountPropertiesRef.countToDate = dateTime;
+        }
+
+        function swapCountDirectionIfNeeded() {
+            if (internalCountPropertiesRef.startCounterFromMilliseconds > internalCountPropertiesRef.stopCounterAtMilliseconds) {
+                internalCountPropertiesRef.countDirection = 'down';
+            }
+        }
     }
 
     /**
@@ -514,6 +554,15 @@
         return a;
     }
 
+    function isObjectEmpty(o) {
+        for (var p in o) {
+            if (o.hasOwnProperty(p)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     function fillLeftZero(target, targetLength) {
         var result = '' + target;
 
@@ -523,14 +572,13 @@
         return result;
     }
 
+    function getTotalMillisecondsFromTimeObject(timeObject) {
 
-    function getTotalMillisecondsFromObject(object) {
-
-        return object.milliseconds || 0 +
-            ((object.seconds || 0) * 1e3) + // 1000
-            ((object.minutes || 0) * 6e4) + // 1000 * 60
-            ((object.hours || 0) * 36e5) + // 1000 * 60 * 60
-            ((object.days || 0) * 864e5);  // 1000 * 60 * 60 * 24
+        return timeObject.milliseconds || 0 +
+            ((timeObject.seconds || 0) * 1e3) + // 1000
+            ((timeObject.minutes || 0) * 6e4) + // 1000 * 60
+            ((timeObject.hours || 0) * 36e5) + // 1000 * 60 * 60
+            ((timeObject.days || 0) * 864e5);  // 1000 * 60 * 60 * 24
     }
 
 
@@ -546,7 +594,6 @@
     }
     else {
         exports.Countree = Countree;
-        exports.CountResult = CountResult;
     }
 
 }(typeof exports === 'object' && exports || window));

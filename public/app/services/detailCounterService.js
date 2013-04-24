@@ -4,19 +4,26 @@ function addDetailCounterService(app) {
         var counter = {};
 
         var counterOption = {
-            direction: 'up',
-            minutes: 23,
-            seconds: 40,
-            hours: 10,
-            days: 0,
-            updateIntervalInMilliseconds: 55,
+            customTime: {
+                stopAt: {
+                    minutes: 23,
+                    seconds: 40,
+                    hours: 10,
+                    days: 7
+                }
+            },
+            updateIntervalInMilliseconds: 33,
             name: 'my first counter'
         };
 
         var countree = new Countree(counterOption);
 
-        counter.restartCounting = function(callback) {
-            countree.start(callback);
+        counter.setIntervalCallback = function setIntervalCallback(callback) {
+            countree.setIntervalCallback(callback);
+        };
+
+        counter.restartCounting = function() {
+            countree.start();
         };
 
         counter.suspendCounting = function() {
